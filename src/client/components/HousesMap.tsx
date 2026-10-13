@@ -5,7 +5,7 @@ import { type FetchHousesFilters, type House } from "@/client/api";
 import { useAsync } from "react-use";
 import { ofetch } from "ofetch";
 import type { Feature, Geometry, MultiPolygon, Polygon } from "geojson";
-import { LuMapPinCheckInside, LuMapPinXInside } from "react-icons/lu";
+import { LuEye, LuEyeOff, LuMapPinCheckInside, LuMapPinXInside } from "react-icons/lu";
 import { booleanPointInPolygon, point } from "@turf/turf";
 import maplibregl from "maplibre-gl";
 
@@ -46,6 +46,7 @@ export function HousesMap({
   config?: HousesMapConfig,
 }) {
   const [hovered, setHovered] = useState<House | null>(null);
+  const [dimmed, setDimmed] = useState(false);
   const geoData = useAsync(() =>
     ofetch<GeoJSON.FeatureCollection>("/geoBoundaries-IRN-ADM4_simplified.geojson", {
       responseType: "json",
@@ -108,7 +109,7 @@ export function HousesMap({
     id: "house-layer",
     data,
     getPosition: (d: House) => [d.location?.lng ?? 0, d.location?.lat ?? 0],
-    getRadius: () => 120,
+    getRadius: dimmed ? 25 : 120,
     radiusUnits: "meters",
     getFillColor: (d: House) => {
       const price = getPrice(d, config?.colors);
@@ -131,12 +132,12 @@ export function HousesMap({
     onHover: ({ object }) => {
       setHovered(object as House);
     },
-    onClick: ({ object }) => {
+    onClick: dimmed ? undefined : ({ object }) => {
       window.open(`https://divar.ir/v/${(object as House).token}`, "_blank");
     },
-    opacity: 0.4,
+    opacity: dimmed ? 0.2 : 0.4,
     stroked: false,
-    pickable: true,
+    pickable: !dimmed,
     updateTriggers: {
       getFillColor: config,
     }
@@ -201,6 +202,18 @@ export function HousesMap({
         <div className="absolute top-0 p-2 flex items-center justify-center gap-2 left-0 pointer-events-none z-10 text-white backdrop-blur-lg backdrop-contrast-75">
           { Math.ceil((hovered.price * hovered.size) / 1000000).toLocaleString() }
         </div>
+      )}
+      {data.length > 0 && (
+        <button
+          onClick={() => {
+            setDimmed((p) => !p);
+            setHovered(null);
+          }}
+          title={dimmed ? "Show houses" : "Hide houses"}
+          className="absolute top-2 right-2 z-20 btn btn-md btn-square btn-soft backdrop-blur-sm"
+        >
+          {dimmed ? <LuEyeOff className="size-5" /> : <LuEye className="size-5" />}
+        </button>
       )}
       {children}
     </DeckGL>
