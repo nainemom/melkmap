@@ -5,9 +5,10 @@ import { type FetchHousesFilters, type House } from "@/client/api";
 import { useAsync } from "react-use";
 import { ofetch } from "ofetch";
 import type { Feature, Geometry, MultiPolygon, Polygon } from "geojson";
-import { LuEye, LuEyeOff, LuMapPinCheckInside, LuMapPinXInside } from "react-icons/lu";
+import { LuMapPinCheckInside, LuMapPinXInside } from "react-icons/lu";
 import { booleanPointInPolygon, point } from "@turf/turf";
 import maplibregl from "maplibre-gl";
+import { BiCollapse, BiExpand } from "react-icons/bi";
 
 const mapStyle = "https://map.divar.ir/back/style/prod/style-dark-view-port-v1.0.0-5be472d4.json";
 
@@ -132,12 +133,12 @@ export function HousesMap({
     onHover: ({ object }) => {
       setHovered(object as House);
     },
-    onClick: dimmed ? undefined : ({ object }) => {
+    onClick: ({ object }) => {
       window.open(`https://divar.ir/v/${(object as House).token}`, "_blank");
     },
     opacity: dimmed ? 0.2 : 0.4,
     stroked: false,
-    pickable: !dimmed,
+    pickable: true,
     updateTriggers: {
       getFillColor: config,
     }
@@ -212,7 +213,7 @@ export function HousesMap({
           title={dimmed ? "Show houses" : "Hide houses"}
           className="absolute top-2 right-2 z-20 btn btn-md btn-square btn-soft backdrop-blur-sm"
         >
-          {dimmed ? <LuEyeOff className="size-5" /> : <LuEye className="size-5" />}
+          {dimmed ? <BiExpand className="size-5" /> : <BiCollapse className="size-5" />}
         </button>
       )}
       {children}
