@@ -47,6 +47,7 @@ export function HousesMap({
   config?: HousesMapConfig,
 }) {
   const [hovered, setHovered] = useState<House | null>(null);
+  const [dimmHovered, setDimmHovered] = useState<boolean>(false);
   const [dimmed, setDimmed] = useState(false);
   const geoData = useAsync(() =>
     ofetch<GeoJSON.FeatureCollection>("/geoBoundaries-IRN-ADM4_simplified.geojson", {
@@ -133,12 +134,12 @@ export function HousesMap({
     onHover: ({ object }) => {
       setHovered(object as House);
     },
-    onClick: ({ object }) => {
+    onClick: !dimmHovered ? ({ object }) => {
       window.open(`https://divar.ir/v/${(object as House).token}`, "_blank");
-    },
+    } : undefined,
     opacity: dimmed ? 0.2 : 0.4,
     stroked: false,
-    pickable: true,
+    pickable: !dimmHovered,
     updateTriggers: {
       getFillColor: config,
     }
@@ -210,6 +211,8 @@ export function HousesMap({
             setDimmed((p) => !p);
             setHovered(null);
           }}
+          onPointerEnter={() => setDimmHovered(true)}
+          onPointerLeave={() => setDimmHovered(false)}
           title={dimmed ? "Show houses" : "Hide houses"}
           className="absolute top-2 right-2 z-20 btn btn-md btn-square btn-soft backdrop-blur-sm"
         >
